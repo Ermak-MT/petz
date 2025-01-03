@@ -1,4 +1,4 @@
-# Petz [petz] By Runsy
+# Petz [petz] by Runsy
 
 Cute kawaii mobs for Minetest.
 This mod is not my, but only its source code,
