@@ -33,11 +33,11 @@ minetest.register_entity("petz:"..pet_name,{
 	textures = textures,
 	visual_size = {x=petz.settings.visual_size.x*scale_model, y=petz.settings.visual_size.y*scale_model},
 	static_save = true,
-	get_staticdata = mobkit.statfunc,
+	get_staticdata = kitz.statfunc,
 	-- api props
 	springiness= 0,
 	buoyancy = 0.5, -- portion of hitbox submerged
-	max_speed = 2.5,
+	max_speed = 3.5,
 	jump_height = 2.0,
 	view_range = 10,
 	lung_capacity = 10, -- seconds
@@ -61,10 +61,10 @@ minetest.register_entity("petz:"..pet_name,{
 		moaning = "petz_bat_moaning",
 	},
 
-	logic = petz.herbivore_brain,
+	logic = petz.flying_brain,
 
 	on_activate = function(self, staticdata, dtime_s) --on_activate, required
-		mobkit.actfunc(self, staticdata, dtime_s)
+		kitz.actfunc(self, staticdata, dtime_s)
 		petz.set_initial_properties(self, staticdata, dtime_s)
 	end,
 
@@ -81,7 +81,7 @@ minetest.register_entity("petz:"..pet_name,{
 	end,
 
 	on_step = function(self, dtime)
-		mobkit.stepfunc(self, dtime) -- required
+		kitz.stepfunc(self, dtime) -- required
 		petz.on_step(self, dtime)
 	end,
 

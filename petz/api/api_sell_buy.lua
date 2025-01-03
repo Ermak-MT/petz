@@ -1,10 +1,10 @@
 local S = ...
 
-petz.buy = function(self, buyer)
+petz.buy = function(self, buyer, _seller_name)
 	local buyer_name = buyer:get_player_name()
 	local inv_buyer = buyer:get_inventory()
 	local seller_name = self.owner
-	if not seller_name then
+	if not seller_name or not(seller_name == _seller_name) then
 		return
 	end
 	local seller = minetest.get_player_by_name(seller_name)
@@ -34,6 +34,6 @@ petz.buy = function(self, buyer)
 		petz.force_detach(self.driver)
 	end
 	petz.abandon_pet(self, S("You have sold your").." "..self.type.." "..S("to").." "..buyer_name..".")
-	mokapi.set_owner(self, buyer_name)
+	kitz.set_owner(self, buyer_name)
 	minetest.chat_send_player(buyer_name, S("Congratulations, you've bought a").." "..self.type)
 end

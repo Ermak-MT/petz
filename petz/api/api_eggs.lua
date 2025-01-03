@@ -1,5 +1,5 @@
 petz.increase_egg_count = function(self)
-	self.eggs_count = mobkit.remember(self, "eggs_count", self.eggs_count+1)
+	self.eggs_count = kitz.remember(self, "eggs_count", self.eggs_count+1)
 end
 
 --Lay Egg
@@ -13,7 +13,7 @@ petz.lay_egg = function(self)
 	local pos = self.object:get_pos()
 	if self.type_of_egg == "item" then
 		local lay_egg_timing = petz.settings.lay_egg_timing
-		if mobkit.timer(self, math.random(lay_egg_timing - (lay_egg_timing*0.2), lay_egg_timing+ (lay_egg_timing*0.2))) then
+		if kitz.timer(self, math.random(lay_egg_timing - (lay_egg_timing*0.2), lay_egg_timing+ (lay_egg_timing*0.2))) then
 			minetest.add_item(pos, "petz:"..self.type.."_egg") --chicken/duck/penguin egg!
 			petz.increase_egg_count(self)
 		end
@@ -42,8 +42,9 @@ end
 petz.extract_egg_from_nest = function(pos, player, itemstack, egg_type)
 	local inv = player:get_inventory()
 	if inv:room_for_item("main", egg_type) then
-		if itemstack:get_name() == egg_type then
-			itemstack:add_item(egg_type)
+		if ((itemstack:get_name() == egg_type) and not(itemstack:get_count() >= itemstack:get_stack_max()))
+			or (itemstack:get_name() == "") then
+				itemstack:add_item(egg_type)
 		else
 			inv:add_item("main", egg_type) --add the egg to the player's inventory
 		end

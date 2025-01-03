@@ -261,6 +261,11 @@ local settings_def = {
 	type = "boolean",
 	default = true,
 	},
+	{
+	name = "disable_syringe",
+	type = "boolean",
+	default = false,
+	},
 	--Punch Effect
 	{
 	name = "colorize_punch",
@@ -383,19 +388,25 @@ local settings_def = {
 	type = "number",
 	default = 3,
 	},
+	--Spinning Wheel
+	{
+	name = "silk_to_bobbin",
+	type = "number",
+	default = 3,
+	},
 	--Bee Stuff
 	{
-	name = "initial_honey_behive",
+	name = "initial_honey_beehive",
 	type = "number",
 	default = 3,
 	},
 	{
-	name = "max_honey_behive",
+	name = "max_honey_beehive",
 	type = "number",
 	default = 10,
 	},
 	{
-	name = "max_bees_behive",
+	name = "max_bees_beehive",
 	type = "number",
 	default = 3,
 	},
@@ -408,6 +419,11 @@ local settings_def = {
 	name = "worker_bee_delay",
 	type = "number",
 	default = 300,
+	},
+	{
+	name = "protect_beehive",
+	type = "boolean",
+	default = false,
 	},
 	--Weapons
 	{
@@ -478,7 +494,7 @@ for key, value in ipairs(settings_def) do
 		end
 		local number = tonumber(user:get(value.name) or settings:get(value.name, value.default))
 		if value.delimit then
-			number = mokapi.delimit_number(number, {min=value.delimit.min, max=value.delimit.max})
+			number = kitz.delimit_number(number, {min=value.delimit.min, max=value.delimit.max})
 		end
 		petz.settings[value.name] = number
 	elseif value.type == "boolean" then
@@ -543,5 +559,7 @@ for i = 1, #petz.settings["petz_list"] do --load the settings
 		settings:get_bool(petz_type.."_create_dam", false)
 	elseif petz_type == "silkworm" then
 		petz.settings[petz_type.."_lay_egg_on_node"] = user:get(petz_type.."_lay_egg_on_node") or settings:get(petz_type.."_lay_egg_on_node") or ""
+		petz.settings[petz_type.."_chrysalis_min_time"] = tonumber(user:get(petz_type.."_chrysalis_min_time") or settings:get(petz_type.."_chrysalis_min_time")) or 1200
+		petz.settings[petz_type.."_chrysalis_max_time"] = tonumber(user:get(petz_type.."_chrysalis_max_time") or settings:get(petz_type.."_chrysalis_min_time")) or 1500
 	end
 end

@@ -8,7 +8,10 @@ petz.dyn_prop = {
 	anthill_founded = {type= "boolean", default = false},
 	back_home = {type= "boolean", default = false},
 	beaver_oil_applied = {type= "boolean", default = false},
+	--DELETE THIS BLOCK IN A FUTURE UPDATE -- behive changed to beehive>>>
 	behive = {type= "pos", default = nil},
+	--<
+	beehive = {type= "pos", default = nil},
 	brushed = {type= "boolean", default = false},
 	captured = {type= "boolean", default = false},
 	child = {type= "boolean", default = false},
@@ -38,7 +41,7 @@ petz.dyn_prop = {
 	home_pos = {type= "table", default = nil},
 	horseshoes = {type= "int", default = 0},
 	is_baby = {type= "boolean", default = false},
-	is_male = {type= "boolean", default = false},
+	is_male = {type= "boolean", default = nil},
 	is_pregnant = {type= "boolean", default = false},
 	is_rut = {type= "boolean", default = false},
 	lashed = {type= "boolean", default = false},
@@ -51,6 +54,7 @@ petz.dyn_prop = {
 	owner = {type= "string", default = nil},
 	pregnant_count = {type= "int", default = petz.settings.pregnant_count},
 	pregnant_time = {type= "int", default = 0},
+	previous_status = {type= "string", default = nil},
 	saddle = {type= "boolean", default = false},
 	saddlebag = {type= "boolean", default = false},
 	saddlebag_inventory = {type= "table", default = {}},
@@ -146,13 +150,13 @@ end
 
 petz.load_vars = function(self)
 	for key, value in pairs(petz.dyn_prop) do
-		self[key] = mobkit.recall(self, key) or value["default"]
+		self[key] = kitz.recall(self, key) or value["default"]
 	end
 	if not(self.sleep_start_time) or not(self.sleep_end_time) then
 		petz.calculate_sleep_times(self)
 	end
 	petz.insert_tamed_by_owner(self)
-	petz.cleanup_prop(self)	 --Reset some vars
+	petz.cleanup_prop(self) --Reset some vars
 end
 
 function petz.set_initial_properties(self, staticdata, dtime_s)
@@ -160,16 +164,9 @@ function petz.set_initial_properties(self, staticdata, dtime_s)
 	local static_data_table = minetest.deserialize(staticdata)
 	local captured_mob = false
 	local baby_born = false
-	--TO DELETE IN FUTURE VERSIONS-->
-	local static_table_name
-	if static_data_table and static_data_table["memory"] then
-		static_table_name = "memory"
-	else
-		static_table_name = "fields"
-	end
-	--<
-	if static_data_table and static_data_table[static_table_name] and static_data_table[static_table_name]["captured"] then
-		captured_mob = true
+	if static_data_table and static_data_table["memory"]
+		and static_data_table["memory"]["captured"] then
+			captured_mob = true
 	elseif static_data_table and static_data_table["baby_born"] then
 		baby_born = true
 	end
@@ -184,16 +181,18 @@ function petz.set_initial_properties(self, staticdata, dtime_s)
 		end
 		--Define some settings ->
 		--Set a random gender for all the mobs (not defined in the entity definition)
-		self.is_male = mobkit.remember(self, "is_male", petz.set_random_gender())
+		if (self.is_male == nil) then
+			self.is_male = kitz.remember(self, "is_male", petz.set_random_gender())
+		end
 		if self.is_mountable then
 			if not(baby_born) then
-				self.max_speed_forward= mobkit.remember(self, "max_speed_forward", math.random(2, 4)) --set a random velocity for walk and run
-				self.max_speed_reverse= 	mobkit.remember(self, "max_speed_reverse", math.random(1, 2))
-				self.accel= mobkit.remember(self, "accel", math.random(2, 4))
+				self.max_speed_forward= kitz.remember(self, "max_speed_forward", math.random(2, 4)) --set a random velocity for walk and run
+				self.max_speed_reverse= kitz.remember(self, "max_speed_reverse", math.random(1, 2))
+				self.accel= kitz.remember(self, "accel", math.random(2, 4))
 			end
 		end
 		if self.parents then --for chicken only
-			self.is_baby = mobkit.remember(self, "is_baby", true)
+			self.is_baby = kitz.remember(self, "is_baby", true)
 		end
 		--Mobs that can have babies
 		if self.breed then
@@ -233,7 +232,7 @@ function petz.set_initial_properties(self, staticdata, dtime_s)
 				self.genes["gen2"] = mutation_gen
 				self.texture_no = mutation_gen
 			end
-			mobkit.remember(self, "genes", self.genes)
+			kitz.remember(self, "genes", self.genes)
 		end
 		--ALL the mobs
 		--Get a texture
@@ -251,7 +250,7 @@ function petz.set_initial_properties(self, staticdata, dtime_s)
 			end
 		end
 		if petz.settings[self.type.."_convert_count"] then
-			self.convert_count = mobkit.remember(self, "convert_count", petz.settings[self.type.."_convert_count"])
+			self.convert_count = kitz.remember(self, "convert_count", petz.settings[self.type.."_convert_count"])
 		end
 		if self.init_tamagochi_timer then
 			petz.init_tamagochi_timer(self)
@@ -278,40 +277,40 @@ function petz.set_initial_properties(self, staticdata, dtime_s)
 	--3. CAPTURED MOBS
 	--
 	else
-		self.captured = mobkit.remember(self, "captured", false) --IMPORTANT! mark as not captured
+		self.captured = kitz.remember(self, "captured", false) --IMPORTANT! mark as not captured
 		for key, value in pairs(petz.dyn_prop) do
 			local prop_value
 			if value["type"] == "string" then
-				prop_value = static_data_table[static_table_name][key]
+				prop_value = static_data_table["memory"][key]
 			elseif value["type"] == "int" then
-				prop_value = tonumber(static_data_table[static_table_name][key])
+				prop_value = tonumber(static_data_table["memory"][key])
 			elseif value["type"] == "boolean" then
-				prop_value = minetest.is_yes(static_data_table[static_table_name][key])
+				prop_value = minetest.is_yes(static_data_table["memory"][key])
 			elseif value["type"] == "table" then
-				prop_value = minetest.deserialize(static_data_table[static_table_name][key])
+				prop_value = static_data_table["memory"][key]
 			elseif value["type"] == "player" then
 				prop_value = nil
 			end
-			self[key] = mobkit.remember(self, key, prop_value) or value["default"]
+			self[key] = kitz.remember(self, key, prop_value) or value["default"]
 		end
 	end
 
 	--Custom textures
 	if captured_mob or self.breed then
 		local texture= petz.compose_texture(self)	--compose the texture
-		mobkit.remember(self, "texture_no", self.texture_no)
+		kitz.remember(self, "texture_no", self.texture_no)
 		petz.set_properties(self, {textures = {texture}})
 	end
 	if self.type == "bee" and self.queen then --delay to create beehive
 		minetest.after(math.random(120, 150), function()
-			if mobkit.is_alive(self.object) then
-				self.create_beehive = mobkit.remember(self, "create_beehive", true)
+			if kitz.is_alive(self.object) then
+				self.create_beehive = kitz.remember(self, "create_beehive", true)
 			end
 		end, self)
 	elseif self.type == "ant" and self.ant_type == "queen" then
 		minetest.after(math.random(120, 150), function()
-			if mobkit.is_alive(self.object) then
-				self.create_anthill = mobkit.remember(self, "create_anthill", true)
+			if kitz.is_alive(self.object) then
+				self.create_anthill = kitz.remember(self, "create_anthill", true)
 			end
 		end, self)
 	end
@@ -320,11 +319,11 @@ function petz.set_initial_properties(self, staticdata, dtime_s)
 			petz.colorize(self, self.colorized)
 		end
 	end
-	--DELETE THIS BLOCK IN THE NEXT UPDATE -- FOR COMPATIBIITY PURPOSES FOR OLD CHICKENS ONLY>>>
-	if self.type == "chicken" then
-		self.is_baby = mobkit.remember(self, "is_baby", true)
-		self.texture_no = mobkit.remember(self, "texture_no", 1)
-		petz.set_properties(self, {textures = {self.textures[1]}})
+	--<<<
+	--DELETE THIS BLOCK IN A FUTURE UPDATE -- behive changed to beehive>>>
+	if self.behive then
+		self.beehive = kitz.remember(self, "beehive", self.behive)
+		self.behive = kitz.remember(self, "behive", nil)
 	end
 	--<<<
 	if self.horseshoes and not captured_mob then
@@ -332,7 +331,7 @@ function petz.set_initial_properties(self, staticdata, dtime_s)
 	end
 	if self.breed then
 		if baby_born then
-			self.is_baby = mobkit.remember(self, "is_baby", true)
+			self.is_baby = kitz.remember(self, "is_baby", true)
 		end
 		if self.is_baby then
 			petz.set_properties(self, {

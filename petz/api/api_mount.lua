@@ -15,14 +15,14 @@ petz.mount = function(self, clicker, wielded_item, wielded_item_name)
 			if self.wagon then
 				petz.animate_wagon(self, "stand")
 			end
-			mobkit.clear_queue_low(self)
-			mobkit.clear_queue_high(self)
-			mobkit.animate(self, "still")
+			kitz.clear_queue_low(self)
+			kitz.clear_queue_high(self)
+			kitz.animate(self, "still")
 			return false
 		elseif (self.saddle or self.saddlebag or self.wagon) and wielded_item_name == petz.settings.shears then
 			if self.wagon then
 				self.wagon:remove()
-				mokapi.drop_item(self, ItemStack("petz:wagon 1"))
+				kitz.drop_item(self, ItemStack("petz:wagon 1"))
 				self.wagon = nil
 			end
 			petz.free_saddles(self)
@@ -57,21 +57,22 @@ petz.put_saddle = function(self, clicker, wielded_item, wielded_item_name)
 	if wielded_item_name == "petz:saddle" then
 		saddle_type = "saddle"
 		self.saddle = true
-		mobkit.remember(self, "saddle", self.saddle)
+		kitz.remember(self, "saddle", self.saddle)
 		if self.saddlebag then
 			another_saddle = "^petz_"..self.type.."_saddlebag.png"
 		end
 	else
 		saddle_type = "saddlebag"
 		self.saddlebag = true
-		mobkit.remember(self, "saddlebag", self.saddlebag)
+		kitz.remember(self, "saddlebag", self.saddlebag)
 		if self.saddle then
 			another_saddle = "^petz_"..self.type.."_saddle.png"
 		end
 	end
-	local texture = "petz_"..self.type.."_"..self.skin_colors[self.texture_no]..".png" .. "^petz_"..self.type.."_"..saddle_type..".png"..another_saddle
+	local texture = "petz_"..self.type.."_"..self.skin_colors[self.texture_no]..".png"
+		.. "^petz_"..self.type.."_"..saddle_type..".png"..another_saddle
 	petz.set_properties(self, {textures = {texture}})
 	wielded_item:take_item()
 	clicker:set_wielded_item(wielded_item)
-	mokapi.make_sound("object", self.object, "petz_put_sound", petz.settings.max_hear_distance)
+	kitz.make_sound("object", self.object, "petz_put_sound", petz.settings.max_hear_distance)
 end

@@ -28,8 +28,8 @@ petz.calculate_sleep_times = function(self)
 			sleep_start_time = math.random(day_start, sleep_end_time_limit - sleep_time)
 			sleep_end_time = sleep_start_time + sleep_time
 		end
-		self.sleep_start_time = mobkit.remember(self, "sleep_start_time", sleep_start_time)
-		self.sleep_end_time = mobkit.remember(self, "sleep_end_time", sleep_end_time)
+		self.sleep_start_time = kitz.remember(self, "sleep_start_time", sleep_start_time)
+		self.sleep_end_time = kitz.remember(self, "sleep_end_time", sleep_end_time)
 		--minetest.chat_send_player("singleplayer", "sleep_time="..tostring(sleep_time).."/sleep_start_time="..tostring(sleep_start_time).."/sleep_end_time="..tostring(sleep_end_time))
 	end
 end
@@ -55,14 +55,15 @@ petz.bh_sleep = function(self, prty)
 		--minetest.chat_send_player("singleplayer", "time of day="..tostring(timeofday).."/sleep_start_time="..tostring(self.sleep_start_time).."/sleep_end_time="..tostring(self.sleep_end_time))
 		if (self.status ~= "sleep") and (timeofday > sleep_start_time and timeofday < sleep_end_time) then
 			--minetest.chat_send_player("singleplayer", "prueba")
+			self.previous_status = kitz.remember(self, "previous_status", self.status)
 			petz.sleep(self, prty, false)
 		end
 	end
 end
 
 petz.sleep = function(self, prty, force)
-	self.status = mobkit.remember(self, "status", "sleep")
-	mobkit.animate(self, 'sleep')
+	self.status = kitz.remember(self, "status", "sleep")
+	kitz.animate(self, 'sleep')
 	local texture = self.textures[self.texture_no]
 	self.object:set_properties(self, {textures = {texture.."^petz_"..self.type.."_sleep.png"}}) --sleeping eyes
 	petz.hq_sleep(self, prty, force)
@@ -87,10 +88,10 @@ function petz.hq_sleep(self, prty, force)
 				if (self.status == "sleep") and timer < 0 --check if status did not change
 					and (self.sleep_at_night and not(petz.is_night())) or (self.sleep_at_day and petz.is_night())
 					or (timeofday < sleep_start_time) or (timeofday > sleep_end_time) then
-						mobkit.clear_queue_high(self) --awake
+						kitz.clear_queue_high(self) --awake
 						local texture = self.textures[self.texture_no]
 						self.object:set_properties(self, {textures = {texture}}) --quit sleeping eyes
-						self.status = mobkit.remember(self, "status", nil)
+						self.status = kitz.remember(self, "status", self.previous_status)
 						return true
 				else
 					petz.do_particles_effect(self.object, self.object:get_pos(), "sleep")
@@ -101,5 +102,5 @@ function petz.hq_sleep(self, prty, force)
 			timer = 2
 		end
 	end
-	mobkit.queue_high(self,func,prty)
+	kitz.queue_high(self,func,prty)
 end
